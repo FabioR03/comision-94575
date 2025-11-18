@@ -1,0 +1,48 @@
+[
+  {
+    "id": 2,
+    "status": true,
+    "thumbnails": [
+      "teclado1.jpg"
+    ],
+    "title": "Teclado mecánico",
+    "description": "Teclado compacto, switch rojo",
+    "code": "T400",
+    "price": 129.99,
+    "stock": 15,
+    "category": "periféricos"
+  },
+  {
+    "id": 3,
+    "title": "Producto en vivo",
+    "description": "Prueba",
+    "code": "ABC123",
+    "price": 55.5,
+    "stock": 12,
+    "category": "test"
+  },
+  {
+    "id": 4,
+    "status": true,
+    "thumbnails": [],
+    "title": "Teclado gamer",
+    "description": "RGB",
+    "code": "abc123",
+    "price": 150,
+    "stock": 20,
+    "category": "Tecnología"
+  },
+  {
+    "id": 5,
+    "status": true,
+    "thumbnails": [
+      "https://example.com/audifonos.jpg"
+    ],
+    "title": "Audífonos Inalámbricos Pro",
+    "description": "Audífonos Bluetooth con cancelación de ruido.",
+    "code": "AUD-PRO-500",
+    "price": 299000,
+    "stock": 35,
+    "category": "audio"
+  }
+]
