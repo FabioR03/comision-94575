@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename)
 const productsPath = path.join(__dirname, '../../products.json')
 
 export default class ProductManager {
+
   async _readFile() {
     try {
       const data = await fs.readFile(productsPath, 'utf-8')
@@ -33,10 +34,15 @@ export default class ProductManager {
   async addProduct(productData) {
     const products = await this._readFile()
 
+   
+    if (!productData.title || !productData.description || !productData.price || !productData.code || !productData.stock) {
+      return { error: "Faltan campos obligatorios" }
+    }
+
     const newProduct = {
       id: products.length > 0 ? products[products.length - 1].id + 1 : 1,
       status: true,
-      thumbnails: [],
+      thumbnail: productData.thumbnail || "", 
       ...productData
     }
 

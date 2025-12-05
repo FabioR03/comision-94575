@@ -1,12 +1,30 @@
-const socket = io()
+const socket = io();
+const form = document.getElementById("productForm");
+const list = document.getElementById("productList");
 
-socket.on('productList', (products) => {
-  const list = document.getElementById('productList')
-  list.innerHTML = ''
+form.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-  products.forEach(p => {
-    const li = document.createElement('li')
-    li.innerHTML = `<strong>${p.title}</strong> - $${p.price}`
-    list.appendChild(li)
-  })
-})
+    const newProduct = {
+        title: form.title.value,
+        description: form.description.value,
+        price: form.price.value,
+        thumbnail: form.thumbnail.value,
+        code: form.code.value,
+        stock: form.stock.value
+    };
+
+    socket.emit("newProduct", newProduct);
+
+    form.reset();
+});
+
+socket.on("productsUpdated", (products) => {
+    list.innerHTML = "";
+
+    products.forEach((p) => {
+        const item = document.createElement("li");
+        item.textContent = `${p.title} - ${p.description} - $${p.price} - Código: ${p.code} - Stock: ${p.stock}`;
+        list.appendChild(item);
+    });
+});

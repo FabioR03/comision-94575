@@ -44,5 +44,15 @@
     "price": 299000,
     "stock": 35,
     "category": "audio"
+  },
+  {
+    "id": 6,
+    "status": true,
+    "thumbnail": "",
+    "title": "Computador",
+    "description": "Portatil Asus ",
+    "price": "2000000",
+    "code": "454646",
+    "stock": "2"
   }
 ]

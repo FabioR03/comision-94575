@@ -1,51 +1,46 @@
-import express from 'express'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { createServer } from 'http'
-import { Server } from 'socket.io'
-import exphbs from 'express-handlebars'
+import express from "express";
+import { Server } from "socket.io";
+import handlebars from "express-handlebars";
+import viewsRouter from "./routes/views.router.js";
+import { ProductModel } from "./models/Product.js";
+import { CartModel } from "./models/Cart.js";
+import path from "path";
+import { fileURLToPath } from "url";
+import { connectDB } from "./config/db.js";
 
-import productsRouter from './routes/products.router.js'
-import cartsRouter from './routes/carts.router.js'
-import viewsRouter from './routes/views.router.js'
-import ProductManager from './managers/ProductManager.js'
+connectDB();
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const app = express()
-const httpServer = createServer(app)
-const io = new Server(httpServer)
+const app = express();
+const PORT = 8080;
 
-const productManager = new ProductManager(path.join(__dirname, '..', 'products.json'))
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
 
+app.engine("handlebars", handlebars.engine());
+app.set("view engine", "handlebars");
+app.set("views", path.join(__dirname, "views"));
 
-app.use(express.json())
-app.use('/public', express.static(path.join(__dirname, '..', 'src', 'public')))
+app.use("/", viewsRouter);
 
+const httpServer = app.listen(PORT, () =>
+  console.log(`Servidor escuchando en http://localhost:${PORT}`)
+);
 
-app.engine('handlebars', exphbs.engine())
-app.set('view engine', 'handlebars')
-app.set('views', path.join(__dirname, 'views'))
+const io = new Server(httpServer);
 
+io.on("connection", async (socket) => {
+  console.log("Cliente conectado");
 
-app.use('/api/products', productsRouter)
-app.use('/api/carts', cartsRouter)
-app.use('/', viewsRouter)
+  const products = await ProductModel.find().lean();
+  socket.emit("productsUpdated", products);
 
-
-io.on('connection', async (socket) => {
-  console.log('🟢 Cliente conectado')
-
-  const products = await productManager.getProducts()
-  socket.emit('productList', products)
-})
-
-
-app.locals.io = io
-
-
-const PORT = 8080
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Servidor escuchando en el puerto ${PORT}`)
-})
+  socket.on("newProduct", async (product) => {
+    await ProductModel.create(product);
+    const updatedProducts = await ProductModel.find().lean();
+    io.emit("productsUpdated", updatedProducts);
+  });
+});
