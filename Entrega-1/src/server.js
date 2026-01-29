@@ -1,46 +1,34 @@
 import express from "express";
-import { Server } from "socket.io";
-import handlebars from "express-handlebars";
-import viewsRouter from "./routes/views.router.js";
-import { ProductModel } from "./models/Product.js";
-import { CartModel } from "./models/Cart.js";
-import path from "path";
-import { fileURLToPath } from "url";
-import { connectDB } from "./config/db.js";
+import passport from "passport";
+import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
 
-connectDB();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { initializePassport } from "./config/passport.config.js";
+import sessionsRouter from "./routes/sessions.router.js";
+import adminRouter from "./routes/admin.router.js";
 
 const app = express();
 const PORT = 8080;
 
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(cookieParser()); 
+app.use(express.static('public')); 
 
-app.engine("handlebars", handlebars.engine());
-app.set("view engine", "handlebars");
-app.set("views", path.join(__dirname, "views"));
 
-app.use("/", viewsRouter);
+initializePassport();
+app.use(passport.initialize());
 
-const httpServer = app.listen(PORT, () =>
-  console.log(`Servidor escuchando en http://localhost:${PORT}`)
-);
 
-const io = new Server(httpServer);
+app.use("/api/sessions", sessionsRouter);
+app.use("/api/admin", adminRouter);
 
-io.on("connection", async (socket) => {
-  console.log("Cliente conectado");
 
-  const products = await ProductModel.find().lean();
-  socket.emit("productsUpdated", products);
+mongoose.connect("mongodb://localhost:27017/ecommerce")
+    .then(() => console.log("✅ Conectado a MongoDB"))
+    .catch(err => console.error("❌ Error MongoDB", err));
 
-  socket.on("newProduct", async (product) => {
-    await ProductModel.create(product);
-    const updatedProducts = await ProductModel.find().lean();
-    io.emit("productsUpdated", updatedProducts);
-  });
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
 });
