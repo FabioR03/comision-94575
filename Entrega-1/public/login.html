@@ -6,12 +6,14 @@
     <title>Login E-commerce</title>
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; margin: 0; }
-        .login-container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 300px; }
-        h2 { text-align: center; color: #333; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .login-container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 320px; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
         button:hover { background-color: #0056b3; }
-        #message { text-align: center; margin-top: 10px; font-size: 14px; }
+        #message { text-align: center; margin-top: 15px; font-size: 14px; min-height: 20px; }
+        .forgot-link { display: block; text-align: center; margin-top: 15px; color: #007bff; text-decoration: none; font-size: 13px; }
+        .forgot-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -21,26 +23,38 @@
     <form id="loginForm">
         <input type="email" name="email" placeholder="Correo electrónico" required>
         <input type="password" name="password" placeholder="Contraseña" required>
-        <button type="submit">Ingresar</button>
+        <button type="submit" id="btnIngresar">Ingresar</button>
     </form>
+    
+    <a href="/forgot-password.html" class="forgot-link">¿Olvidaste tu contraseña?</a>
+    
     <p id="message"></p>
 </div>
 
 <script>
     const form = document.getElementById('loginForm');
     const message = document.getElementById('message');
+    const btn = document.getElementById('btnIngresar');
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         
-        const data = Object.fromEntries(new FormData(e.target));
-        
+        message.textContent = "Conectando con el servidor...";
+        message.style.color = "#666";
+        btn.disabled = true;
+
+        const data = Object.fromEntries(new FormData(form));
+
         try {
-            const response = await fetch('/api/sessions/login', {
+            
+            const response = await fetch('./api/sessions/login', {
                 method: 'POST',
                 body: JSON.stringify(data),
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
             });
 
             const result = await response.json();
@@ -52,14 +66,18 @@
                 
                 setTimeout(() => {
                     window.location.href = "/api/sessions/current";
-                }, 1500);
+                }, 1000);
             } else {
+                btn.disabled = false;
                 message.style.color = "red";
-                message.textContent = "Error: " + (result.error || "Credenciales inválidas");
+                message.textContent = "Error: " + (result.error || result.message || "Credenciales incorrectas");
             }
+
         } catch (error) {
-            console.error("Error en la petición:", error);
-            message.textContent = "Error de conexión al servidor";
+            btn.disabled = false;
+            console.error("Error en el login:", error);
+            message.style.color = "red";
+            message.textContent = "No se pudo conectar al servidor. Verifica que esté encendido.";
         }
     });
 </script>

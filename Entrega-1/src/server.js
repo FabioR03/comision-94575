@@ -25,7 +25,7 @@ app.use("/api/sessions", sessionsRouter);
 app.use("/api/admin", adminRouter);
 
 
-mongoose.connect("mongodb://localhost:27017/ecommerce")
+mongoose.connect("mongodb://127.0.0.1:27017/ecommerce")
     .then(() => console.log("✅ Conectado a MongoDB"))
     .catch(err => console.error("❌ Error MongoDB", err));
 
